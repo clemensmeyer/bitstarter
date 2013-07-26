@@ -1,8 +1,10 @@
 var express = require('express');
-var app = express();
 var fs = require('fs');
 var file = "index.html";
-app.use(express.logger());
+
+var app = express.createServer(express.logger());
+
+//app.use(express.logger());
 
 /*app.get('/', function(request, response) {
   response.send('Hello World 2!');
@@ -14,12 +16,11 @@ app.use(express.logger());
 //var website
 //website = websiteBuffer.toString();
 app.get('/', function(request, response) {
-    var websiteBuffer = fs.readFileSync(file).toString;
+    var websiteBuffer = fs.readFileSync(file).toString();
     response.send(websiteBuffer);
 });
 
-/*var port = process.env.PORT || 5000;
+var port = process.env.PORT || 5000;
 app.listen(port, function() {
   console.log("Listening on " + port);
-});*/
-
+});
