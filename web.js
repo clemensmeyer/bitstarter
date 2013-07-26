@@ -12,10 +12,11 @@ websiteBuffer = fs.readFileSync(index.html);
 //var website
 //website = websiteBuffer.toString();
 app.get('/', function(request, response) {
-    websiteBuffer.toString();
+    response.send(websiteBuffer.toString());
 });
 
 var port = process.env.PORT || 5000;
 app.listen(port, function() {
   console.log("Listening on " + port);
 });
+
