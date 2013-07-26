@@ -9,11 +9,10 @@ app.use(express.logger());
 
 var websiteBuffer = new Buffer(8);
 websiteBuffer = fs.readFileSync(index.html);
-var website
-
-website = websiteBuffer.toString();
+//var website
+//website = websiteBuffer.toString();
 app.get('/', function(request, response) {
-    response.send(website);
+    websiteBuffer.toString();
 });
 
 var port = process.env.PORT || 5000;
