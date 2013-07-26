@@ -4,17 +4,6 @@ var file = "index.html";
 
 var app = express.createServer(express.logger());
 
-//app.use(express.logger());
-
-/*app.get('/', function(request, response) {
-  response.send('Hello World 2!');
-});
-*/
-
-//var websiteBuffer = new Buffer(8);
-//websiteBuffer = fs.readFileSync(file);
-//var website
-//website = websiteBuffer.toString();
 app.get('/', function(request, response) {
     var websiteBuffer = fs.readFileSync(file).toString();
     response.send(websiteBuffer);
