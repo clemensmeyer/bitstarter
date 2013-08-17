@@ -25,9 +25,9 @@ var fs = require('fs');
 var program = require('commander');
 var cheerio = require('cheerio');
 var rest = require('restler');
-var HTMLFILE_DEFAULT = "index2.html";
+var HTMLFILE_DEFAULT = "index.html";
 var CHECKSFILE_DEFAULT = "checks.json";
-var URL_DEFAULT = "http://damp-everglades-7610.herokuapp.com/";
+var URL_DEFAULT = null;
 
 var assertFileExists = function(infile) {
     var instr = infile.toString();
@@ -38,20 +38,6 @@ var assertFileExists = function(infile) {
     return instr;
 };
 
-var assertUrlExists = function(url) {
-    rest.get(url).on('complete', function(result) {
-	if (result instanceof Error) {
-	    console.log("Page not found!");
-	    process.exit(1);
-	    }
-	else {
-	    console.log("Checking " + url);
-	    htmlfile = result;
-	}
-	});
-};
-
-
 var cheerioHtmlFile = function(htmlfile) {
     return cheerio.load(fs.readFileSync(htmlfile));
 };
@@ -60,17 +46,8 @@ var loadChecks = function(checksfile) {
     return JSON.parse(fs.readFileSync(checksfile));
 };
 
-var checkHtmlFile = function(htmlfile, checksfile, url) {
-//    if(url != "NULL")
-//	{
-//    htmlfile=rest.get(url).on('complete', function(result) {
-//	if (result instanceof Error) {
-//	    console.log("Error [add error message]");
-//	} else {
-//	    return result;
-//	}
-//    });
-//	}
+var checkHtml = function(htmlfile, checksfile) {
+    console.log("Checking file: " + htmlfile);
     $ = cheerioHtmlFile(htmlfile);
     var checks = loadChecks(checksfile).sort();
     var out = {};
@@ -78,7 +55,30 @@ var checkHtmlFile = function(htmlfile, checksfile, url) {
 	var present = $(checks[ii]).length > 0;
 	out[checks[ii]] = present;
     }
-    return out;
+    var outJson = JSON.stringify(out, null, 4);
+    console.log(outJson);
+};
+
+var checkUrl = function(url, checksfile) {
+    console.log("Checking URL: " + url);
+    rest.get(url).on('complete', function(data) {
+
+	if(data instanceof Error) {
+	    console.log("Page not found. Exiting.");
+	    process.exit(1);
+	    }
+	else {
+	$ = cheerio.load(data);
+	var checks = loadChecks(checksfile).sort();
+	var out = {};
+	for (var ii in checks) {
+	    var present = $(checks[ii]).length > 0;
+	    out[checks[ii]] = present;
+	    }
+	var outJson = JSON.stringify(out, null, 4);
+	console.log(outJson);
+	    }
+	});
 };
 
 var clone = function(fn) {
@@ -91,11 +91,14 @@ if(require.main == module) {
     program
 	.option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
 	.option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
-	.option('-u, --url <url>', 'URL of index.html', clone(assertUrlExists), URL_DEFAULT)
+	.option('-u, --url <url>', 'URL of index.html', URL_DEFAULT)
 	.parse(process.argv);
-    var checkJson = checkHtmlFile(program.file, program.checks, program.url);
-    var outJson = JSON.stringify(checkJson, null, 4);
-    console.log(outJson);
+    if(program.url !== null) {
+	checkUrl(program.url, program.checks);
+	}
+    else {
+	checkHtml(program.file, program.checks);
+	}
 } else {
     exports.checkHtmlFile = checkHtmlFile;
 }
